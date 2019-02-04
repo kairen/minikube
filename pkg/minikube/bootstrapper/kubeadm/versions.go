@@ -27,7 +27,6 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"k8s.io/kubernetes/cmd/kubeadm/app/features"
-	"k8s.io/minikube/pkg/minikube/constants"
 	"k8s.io/minikube/pkg/util"
 )
 
@@ -226,7 +225,6 @@ var versionSpecificOpts = []VersionedExtraOption{
 		},
 		LessThanOrEqual: semver.MustParse("1.9.10"),
 	},
-	NewUnversionedOption(Kubelet, "hostname-override", constants.DefaultNodeName),
 
 	// System pods args
 	NewUnversionedOption(Kubelet, "pod-manifest-path", "/etc/kubernetes/manifests"),
@@ -266,6 +264,20 @@ var versionSpecificOpts = []VersionedExtraOption{
 			Value:     "0",
 		},
 		LessThanOrEqual: semver.MustParse("1.11.1000"),
+	},
+	{
+		Option: util.ExtraOption{
+			Component: ControllerManager,
+			Key:       "cluster-cidr",
+			Value:     "10.244.0.0/16",
+		},
+	},
+	{
+		Option: util.ExtraOption{
+			Component: ControllerManager,
+			Key:       "allocate-node-cidrs",
+			Value:     "true",
+		},
 	},
 }
 

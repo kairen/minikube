@@ -151,6 +151,7 @@ const (
 	KubeletServiceFile      = "/lib/systemd/system/kubelet.service"
 	KubeletSystemdConfFile  = "/etc/systemd/system/kubelet.service.d/10-kubeadm.conf"
 	KubeadmConfigFile       = "/var/lib/kubeadm.yaml"
+	EtcHosts                = "/etc/hosts"
 	DefaultCNIConfigPath    = "/etc/cni/net.d/k8s.conf"
 	DefaultRktNetConfigPath = "/etc/rkt/net.d/k8s.conf"
 )

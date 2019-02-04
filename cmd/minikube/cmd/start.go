@@ -78,6 +78,7 @@ const (
 	vsockPorts            = "hyperkit-vsock-ports"
 	gpu                   = "gpu"
 	embedCerts            = "embed-certs"
+	node                  = "node"
 )
 
 var (
@@ -179,6 +180,7 @@ func runStart(cmd *cobra.Command, args []string) {
 		DisableDriverMounts: viper.GetBool(disableDriverMounts),
 		UUID:                viper.GetString(uuid),
 		GPU:                 viper.GetBool(gpu),
+		Node:                viper.GetBool(node),
 	}
 
 	// Load current profile cluster config from file, before overwriting it with the new state
@@ -255,11 +257,16 @@ func runStart(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	nodeName := viper.GetString(cfg.MachineProfile)
+	if nodeName == "" {
+		nodeName = "minikube"
+	}
+
 	kubernetesConfig := cfg.KubernetesConfig{
 		KubernetesVersion:      selectedKubernetesVersion,
 		NodeIP:                 ip,
 		NodePort:               viper.GetInt(apiServerPort),
-		NodeName:               constants.DefaultNodeName,
+		NodeName:               nodeName,
 		APIServerName:          viper.GetString(apiServerName),
 		APIServerNames:         apiServerNames,
 		APIServerIPs:           apiServerIPs,
@@ -411,6 +418,10 @@ This can also be done automatically by setting the env var CHANGE_MINIKUBE_NONE_
 		}
 	}
 
+	if config.Node {
+		return
+	}
+
 	if !exists || config.VMDriver == constants.DriverNone {
 		fmt.Println("Starting cluster components...")
 		if err := k8sBootstrapper.StartCluster(kubernetesConfig); err != nil {
@@ -541,6 +552,7 @@ func init() {
 	startCmd.Flags().String(vpnkitSock, "", "Location of the VPNKit socket used for networking. If empty, disables Hyperkit VPNKitSock, if 'auto' uses Docker for Mac VPNKit connection, otherwise uses the specified VSock.")
 	startCmd.Flags().StringSlice(vsockPorts, []string{}, "List of guest VSock ports that should be exposed as sockets on the host (Only supported on with hyperkit now).")
 	startCmd.Flags().Bool(gpu, false, "Enable experimental NVIDIA GPU support in minikube (works only with kvm2 driver on Linux)")
+	startCmd.Flags().Bool(node, false, "Start Kubernetes without initialization.")
 	viper.BindPFlags(startCmd.Flags())
 	RootCmd.AddCommand(startCmd)
 }

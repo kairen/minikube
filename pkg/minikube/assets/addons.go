@@ -278,6 +278,18 @@ var Addons = map[string]*Addon{
 			constants.GvisorContainerdShimTargetName,
 			"0640"),
 	}, false, "gvisor"),
+	"calico": NewAddon([]*BinDataAsset{
+		NewBinDataAsset(
+			"deploy/addons/calico/calico-rbac.yaml",
+			constants.AddonsPath,
+			"calico-rbac.yaml",
+			"0640"),
+		NewBinDataAsset(
+			"deploy/addons/calico/calico-ds.yaml",
+			constants.AddonsPath,
+			"calico-ds.yaml",
+			"0640"),
+	}, true, "calico"),
 }
 
 func AddMinikubeDirAssets(assets *[]CopyableFile) error {

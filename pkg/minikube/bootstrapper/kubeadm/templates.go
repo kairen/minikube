@@ -72,7 +72,8 @@ nodeRegistration:
 apiVersion: kubeadm.k8s.io/v1alpha3
 certificatesDir: {{.CertDir}}
 clusterName: kubernetes
-controlPlaneEndpoint: localhost:{{.APIServerPort}}
+nodeName: {{.NodeName}}
+controlPlaneEndpoint: {{.AdvertiseAddress}}:{{.APIServerPort}}
 etcd:
   local:
     dataDir: {{.EtcdDataDir}}
@@ -81,7 +82,15 @@ kubernetesVersion: {{.KubernetesVersion}}
 networking:
   dnsDomain: cluster.local
   podSubnet: ""
-  serviceSubnet: {{.ServiceCIDR}}`))
+  serviceSubnet: {{.ServiceCIDR}}
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+clusterCIDR: 10.244.0.0/16`))
+
+var etcHostsTemplate = template.Must(template.New("etcHostsTemplate").Parse(`127.0.0.1 localhost
+{{.NodeIP}} {{.NodeName}}
+`))
 
 var kubeletSystemdTemplate = template.Must(template.New("kubeletSystemdTemplate").Parse(`
 [Unit]

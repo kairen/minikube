@@ -357,10 +357,16 @@ func (k *KubeadmBootstrapper) UpdateCluster(cfg config.KubernetesConfig) error {
 		return errors.Wrap(err, "generating kubelet config")
 	}
 
+	etcHostsCfg, err := generateHosts(cfg)
+	if err != nil {
+		return errors.Wrap(err, "generating hosts")
+	}
+
 	files := []assets.CopyableFile{
 		assets.NewMemoryAssetTarget([]byte(kubeletService), constants.KubeletServiceFile, "0640"),
 		assets.NewMemoryAssetTarget([]byte(kubeletCfg), constants.KubeletSystemdConfFile, "0640"),
 		assets.NewMemoryAssetTarget([]byte(kubeadmCfg), constants.KubeadmConfigFile, "0640"),
+		assets.NewMemoryAssetTarget([]byte(etcHostsCfg), constants.EtcHosts, "0644"),
 	}
 
 	// Copy the default CNI config (k8s.conf), so that kubelet can successfully
@@ -414,6 +420,22 @@ sudo systemctl start kubelet
 	}
 
 	return nil
+}
+
+func generateHosts(k8s config.KubernetesConfig) (string, error) {
+	opts := struct {
+		NodeName string
+		NodeIP   string
+	}{
+		NodeName: k8s.NodeName,
+		NodeIP:   k8s.NodeIP,
+	}
+
+	b := bytes.Buffer{}
+	if err := etcHostsTemplate.Execute(&b, opts); err != nil {
+		return "", err
+	}
+	return b.String(), nil
 }
 
 func generateConfig(k8s config.KubernetesConfig) (string, error) {
