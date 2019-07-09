@@ -67,7 +67,8 @@ func downloadMinikubeBinary(version string) (*os.File, error) {
 // and it tries to upgrade from the older supported k8s to news supported k8s
 func TestVersionUpgrade(t *testing.T) {
 	currentRunner := NewMinikubeRunner(t)
-	currentRunner.RunCommand("delete", true)
+	currentRunner.Args = "-p test"
+	currentRunner.RunCommand("delete -p test", true)
 	currentRunner.CheckStatus(state.None.String())
 	tf, err := downloadMinikubeBinary("latest")
 	if err != nil || tf == nil {
@@ -77,15 +78,16 @@ func TestVersionUpgrade(t *testing.T) {
 
 	releaseRunner := NewMinikubeRunner(t)
 	releaseRunner.BinaryPath = tf.Name()
+	releaseRunner.Args = "-p test"
 	// For full coverage: also test upgrading from oldest to newest supported k8s release
 	releaseRunner.Start(fmt.Sprintf("--kubernetes-version=%s", constants.OldestKubernetesVersion))
 	releaseRunner.CheckStatus(state.Running.String())
-	releaseRunner.RunCommand("stop", true)
+	releaseRunner.RunCommand("stop -p test", true)
 	releaseRunner.CheckStatus(state.Stopped.String())
 
 	// Trim the leading "v" prefix to assert that we handle it properly.
 	currentRunner.Start(fmt.Sprintf("--kubernetes-version=%s", strings.TrimPrefix(constants.NewestKubernetesVersion, "v")))
 	currentRunner.CheckStatus(state.Running.String())
-	currentRunner.RunCommand("delete", true)
+	currentRunner.RunCommand("delete -p test", true)
 	currentRunner.CheckStatus(state.None.String())
 }
